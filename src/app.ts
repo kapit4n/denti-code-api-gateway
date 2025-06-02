@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import apiRoutes from './routes'; // Your proxy routes
 import { config } from './config';
+import { errorHandler, notFoundError } from './middleware/error-handler'
 
 const app: Application = express();
 
@@ -30,11 +31,7 @@ app.use('/api/gateway', apiRoutes);
 
 
 // Not Found Handler for gateway paths
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (!res.headersSent) {
-    res.status(404).json({ message: 'Resource not found on API Gateway.' });
-  }
-});
+app.use(notFoundError);
 
 app.use((req, res, next) => {
   console.log(`[APP PRE-ROUTER] OriginalURL: ${req.originalUrl}, URL: ${req.url}, BaseURL: ${req.baseUrl}, Path: ${req.path}`);
@@ -42,14 +39,6 @@ app.use((req, res, next) => {
 });
 
 // Global Error Handler for the gateway itself
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Gateway global error:', err.stack);
-  if (!res.headersSent) {
-    res.status(err.status || 500).json({
-      message: err.message || 'An unexpected error occurred on the gateway.',
-      error: config.nodeEnv === 'development' ? err : undefined,
-    });
-  }
-});
+app.use(errorHandler);
 
 export default app;
