@@ -11,6 +11,9 @@ const app: Application = express();
 // Security Middleware
 app.use(helmet());
 
+// Mount Proxy Routes under /api/gateway
+app.use('/api/gateway', apiRoutes);
+
 // Body Parsers (Gateway might not need to parse bodies itself if just proxying,
 // but useful if you add middleware that needs it before proxying)
 app.use(express.json());
@@ -26,8 +29,7 @@ app.get('/api/gateway/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'UP', message: 'Gateway is healthy' });
 });
 
-// Mount Proxy Routes under /api/gateway
-app.use('/api/gateway', apiRoutes);
+
 
 
 // Not Found Handler for gateway paths
