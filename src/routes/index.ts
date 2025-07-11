@@ -3,6 +3,7 @@ import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { config } from '../config';
 import morgan from 'morgan';
 import { IncomingMessage } from 'http';
+import { authenticate } from '../middleware/authMiddleware'
 
 interface ProxyOptions extends Options {
   logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent';
@@ -58,12 +59,23 @@ const createProxyOptions = (
   };
 };
 
+if (config.services.auth) {
+  router.use(
+    '/auth',
+    morgan('dev'),
+    createProxyMiddleware(
+      createProxyOptions(config.services.auth, '/auth')
+    )
+  )
+}
+
 // --- Patient Management Service Proxy ---
 // Client calls: GET /api/gateway/patients/:id
 // Proxies to: PATIENT_SERVICE_URL/api/patients/:id
 if (config.services.patients) {
   router.use(
     '/patients',
+    authenticate,
     morgan('dev'), // Request logging for this specific proxy
     createProxyMiddleware(
       createProxyOptions(config.services.patients, '/api/patients')
@@ -77,6 +89,7 @@ if (config.services.patients) {
 if (config.services.clinic) {
   router.use(
     '/doctors',
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.clinic, '/api/v1/doctors')
@@ -87,6 +100,7 @@ if (config.services.clinic) {
   // Proxies to: CLINIC_PROVIDER_SERVICE_URL/api/v1/specializations
   router.use(
     '/specializations',
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.clinic, '/api/v1/specializations')
@@ -97,6 +111,7 @@ if (config.services.clinic) {
   // Proxies to: CLINIC_PROVIDER_SERVICE_URL/api/v1/procedures/categories
   router.use(
     '/procedures/categories',
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.clinic, '/api/v1/procedures/categories')
@@ -107,6 +122,7 @@ if (config.services.clinic) {
   // Proxies to: CLINIC_PROVIDER_SERVICE_URL/api/v1/procedures/types
   router.use(
     '/procedures/types',
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.clinic, '/api/v1/procedures/types')
@@ -121,6 +137,7 @@ if (config.services.clinic) {
 if (config.services.appointments) {
   router.use(
     '/appointments',
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.appointments, '/api/v1/appointments')
@@ -133,6 +150,7 @@ if (config.services.appointments) {
   // The pathRewrite for '/actions' ensures that if client calls /api/gateway/actions, it's also routed.
   router.use(
     '/actions', // This will catch /api/gateway/actions/*
+    authenticate,
     morgan('dev'),
     createProxyMiddleware(
       createProxyOptions(config.services.appointments, '/api/v1/actions')

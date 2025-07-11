@@ -8,4 +8,5 @@ app.listen(config.port, () => {
   console.log(`  Patients: ${config.services.patients || 'Not Configured'}`);
   console.log(`  Clinic: ${config.services.clinic || 'Not Configured'}`);
   console.log(`  Appointments: ${config.services.appointments || 'Not Configured'}`);
+  console.log(`  Auth: ${config.services.auth || 'Not Configured'}`);
 });
