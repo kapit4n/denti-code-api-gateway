@@ -2,11 +2,25 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
-import apiRoutes from './routes'; // Your proxy routes
+import cors from 'cors';
+import apiRoutes from './routes';
 import { config } from './config';
 import { errorHandler, notFoundError } from './middleware/error-handler'
 
 const app: Application = express();
+
+const corsOptions = {
+  // The origin is the URL of your frontend application
+  origin: 'http://localhost:3000', // 👈 Your Next.js app's URL
+  // The HTTP methods you want to allow
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  // The headers you want to allow in requests
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  // Allow cookies to be sent (if you use them for sessions)
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Security Middleware
 app.use(helmet());
@@ -28,8 +42,6 @@ if (config.nodeEnv === 'development') {
 app.get('/api/gateway/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'UP', message: 'Gateway is healthy' });
 });
-
-
 
 
 // Not Found Handler for gateway paths
